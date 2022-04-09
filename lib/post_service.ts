@@ -16,7 +16,7 @@ export async function loadData(): Promise<DataStorage> {
     if (globalThis.cached === null) {
         try {
             await fs.access(FILE_NAME);
-            console.log('read file')
+            
             const fileBuffer = await fs.readFile(FILE_NAME)
 
             const fileContent: Array<Post> = JSON.parse(fileBuffer.toString())
@@ -32,13 +32,13 @@ export async function loadData(): Promise<DataStorage> {
             })
 
         } catch {
-            console.log("write file")
+            
             await fs.writeFile(FILE_NAME, JSON.stringify([]))
             globalThis.cached = []
         }
 
     }
-    console.log('cached')
+  
     return {
         posts: globalThis.cached,
         categories: globalThis.categories,
@@ -47,10 +47,8 @@ export async function loadData(): Promise<DataStorage> {
 }
 
 export async function writePost(post: Post) {
-    console.log('writing post')
     if (globalThis.cached === null) await loadData()
     globalThis.cached!.push(post)
-    console.log('wrrite')
 
     post.tags.forEach((tag) => {
         if (!globalThis.tags.includes(tag))
@@ -65,15 +63,17 @@ export async function writePost(post: Post) {
 
 export async function search({query = '', category = '', tags = [], page = 1}) {
     if (globalThis.cached === null) await loadData()
+   
     var posts = globalThis.cached!.filter((post) => {
-        return ((category.length === 0 || post.category === category) &&
-            (post.body.includes(query) || post.title.includes(query) || query.length === 0))
+        return ((category.length === 0 || post.category === category || category === 'all')) &&
+        ((post.body.includes(query) || post.title.includes(query) || query.length === 0))
     }
     )
-    for (let tag in tags) {
+    tags.forEach(tag => {
+     
         posts = posts.filter((post) => post.tags.includes(tag))
-    }
-    const pages = Math.ceil(posts.length / 10)
+    }) 
+    const pages = Math.ceil(posts.length / 10 )
     posts = posts.slice(10*(page-1), 10*page)
     return {pages, posts}
 }

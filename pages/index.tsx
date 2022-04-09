@@ -2,7 +2,7 @@ import type { GetServerSideProps } from 'next'
 import Head from 'next/head'
 import { Post } from '../model/model'
 import { search } from '../lib/post_service'
-import Layout from '../components/root_layout'
+import SearchPage from './content/[[...params]]'
 
 
 type Props = {
@@ -10,20 +10,10 @@ type Props = {
   pages: number | null
 }
 
-const Home = ({ posts }: Props) => {
+const Home = ({ posts, pages }: Props) => {
  
   return (
-    <Layout>
-      <Head>
-        <title>Blog Platform</title>
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
-      {(posts === null) ? <div>
-        Постов еще нет
-      </div> :
-        posts.map(e => (<div key={e.timestamp}>{e.body}</div>))}
-     
-    </Layout>
+    <SearchPage category='all' page={1} pages={pages} posts={posts}></SearchPage>
   )
 }
 
