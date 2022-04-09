@@ -1,32 +1,40 @@
 import type { GetServerSideProps } from 'next'
-import Head from 'next/head'
 import { Post } from '../model/model'
-import { search } from '../lib/post_service'
+import { getCategories, search } from '../lib/post_service'
 import SearchPage from './content/[[...params]]'
 
 
 type Props = {
-  posts: Array<Post> | null,
-  pages: number | null
+  posts: Post[] | null,
+  pages: number | null,
+  categories: string[]
 }
 
-const Home = ({ posts, pages }: Props) => {
+const Home = ({ posts, pages, categories }: Props) => {
  
   return (
-    <SearchPage category='all' page={1} pages={pages} posts={posts}></SearchPage>
+    <SearchPage 
+        category='all' 
+        page={1} 
+        pages={pages} 
+        posts={posts} 
+        query={''} 
+        categories={categories}/>
   )
 }
 
 export default Home
 
 export const getServerSideProps: GetServerSideProps = async context => {
-  let {posts, pages} = await search({
+  const {posts, pages} = await search({
     page: 1
   })
+  const categories = await getCategories()
   return {
     props: {
-      posts: posts,
-      pages: pages
+      posts,
+      pages,
+      categories
     }
   }
 }

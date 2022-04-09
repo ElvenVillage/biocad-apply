@@ -77,3 +77,8 @@ export async function search({query = '', category = '', tags = [], page = 1}) {
     posts = posts.slice(10*(page-1), 10*page)
     return {pages, posts}
 }
+
+export async function getCategories() {
+    if (globalThis.cached === null) await loadData()
+    return globalThis.categories;
+}
