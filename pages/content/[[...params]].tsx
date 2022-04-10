@@ -3,7 +3,6 @@ import Search from "antd/lib/input/Search";
 import { Content, Header } from "antd/lib/layout/layout";
 import Sider from "antd/lib/layout/Sider";
 import type { GetServerSideProps } from "next";
-import Head from "next/head";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { HeaderComponent } from "../../components/header_component";
@@ -16,7 +15,6 @@ type Props = {
   pages: number | null;
   page: number;
   category: string;
-  query: string;
   categories: string[];
 };
 
@@ -25,13 +23,12 @@ const SearchPage = ({
   category,
   page,
   pages,
-  query,
   categories,
 }: Props) => {
   const [tags, setTags] = useState<string[]>([]);
 
-  const [localQuery, setLocalQuery] = useState(query);
-  const [searchQuery, setSearchQuery] = useState(query);
+  const [localQuery, setLocalQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
 
   const [localPosts, setLocalPosts] = useState<Post[] | null>([]);
   const [localPages, setLocalPages] = useState(0);
@@ -40,10 +37,14 @@ const SearchPage = ({
   const router = useRouter();
 
   useEffect(() => {
+    setTags([])
+    setLocalQuery('')
+    setSearchQuery('')
+  }, [category])
+
+  useEffect(() => {
     const fetchPosts = async () => {
-      console.log("c");
-      if (tags.length == 0) return;
-      console.log("b");
+      if (tags.length == 0 && searchQuery.length === 0) return;
       const result = await fetch("/api/search/", {
         method: "POST",
         body: new URLSearchParams({
@@ -63,39 +64,38 @@ const SearchPage = ({
 
   return (
     <Layout>
-    <Header className="header">
-    <HeaderComponent title={category} />
-    </Header>
-    <Content style={{ padding: '0 50px' }}>
-      <Layout className="site-layout-background" style={{ padding: '24px 0' }} hasSider>
-        <Sider className="site-layout-background" width={200} style={{position: 'sticky'}}>
-        <Search
+      <Header style={{ backgroundColor: 'white' }}>
+        <HeaderComponent title={category} />
+      </Header>
+      <Content style={{ padding: '0 50px' }}>
+        <Layout style={{ padding: '24px 0' }} hasSider>
+          <Sider
+            breakpoint="lg"
+            collapsedWidth="0"
+          >
+            <Search
               value={localQuery}
               onChange={(event) => setLocalQuery(event.currentTarget.value)}
               onSearch={(event) => {
-                if (tags.length === 0) {
-                  router.push(`/content/${category}/${event}/1/`);
-                } else {
-                  console.log("a");
-                  setLocalPage(1);
-                  setSearchQuery(event);
-                }
+                setLocalPage(1);
+                setSearchQuery(event);
               }}
             />
-          <Menu
-            mode="inline"
-            onClick={(e) => {
-              router.push(`/content/${e.key}/1`)
-            }}
-            style={{ height: '100%' }}
-          >
-            {categories.map((cat) => (
+            <Menu
+              mode="inline"
+              onClick={(e) => {
+                router.push(`/content/${e.key}/1`)
+              }}
+              style={{ height: '100%' }}
+              defaultSelectedKeys={[category]}
+            >
+              {categories.map((cat) => (
                 <Menu.Item key={cat}>{cat}</Menu.Item>
-            ))}
-          </Menu>
-        </Sider>
-        <Content style={{ padding: '0 24px', minHeight: 280 }}>
-        <Space>
+              ))}
+            </Menu>
+          </Sider>
+          <Content style={{ padding: '0 24px', minHeight: 280 }}>
+            <Space>
               {tags.map((tag) => (
                 <Tag
                   closable
@@ -109,7 +109,7 @@ const SearchPage = ({
                 </Tag>
               ))}
             </Space>
-            {(tags.length === 0 ? posts : localPosts)?.map((post) =>
+            {((tags.length === 0 && searchQuery.length === 0) ? posts : localPosts)?.map((post) =>
               PostComponent(post, (tag) => {
                 if (tags.includes(tag)) return;
                 setLocalPage(1);
@@ -118,26 +118,24 @@ const SearchPage = ({
             )}
             <Pagination
               total={
-                tags.length == 0 ? (pages ?? 0) * 10 : (localPages ?? 0) * 10
+                (tags.length === 0 && searchQuery.length === 0) ? (pages ?? 0) * 10 : (localPages ?? 0) * 10
               }
-              current={tags.length == 0 ? page : localPage}
-              onChange={(page, size) => {
+              current={(tags.length === 0 && searchQuery.length === 0) ? page : localPage}
+              onChange={(page) => {
                 if (tags.length == 0) {
-                  if (localQuery.length === 0) {
-                    router.push(`/content/${category}/${page}`);
-                  } else {
-                    router.push(`/content/${category}/${localQuery}/${page}`);
-                  }
+
+                  router.push(`/content/${category}/${page}`);
+
                 } else {
                   setLocalPage(page);
                 }
               }}
             />
-        </Content>
-      </Layout>
-    </Content>
+          </Content>
+        </Layout>
+      </Content>
 
-  </Layout>
+    </Layout>
   )
 };
 
@@ -146,35 +144,33 @@ export default SearchPage;
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const params = context.params!["params"] as string[];
 
+
   let category = "";
-  let page = 1;
-  let query = "";
-  if (params != undefined) {
-    category = params[0];
-    if (params.length === 2) {
-      page = Number(params[1]);
-    }
-    if (params.length === 3) {
-      query = params[1];
-      page = Number(params[2]);
-    }
-  }
+  category = params[0];
+  let page = Number(params[1]);
+
+
   let { posts, pages } = await search({
     page: page,
     category: category === "all" ? undefined : category,
-    query: query,
+    query: '',
   });
 
   let categories = await getCategories();
 
   return {
     props: {
-      posts: posts,
-      pages: pages,
-      page: page,
-      category: category,
-      query: query,
-      categories: categories,
+      posts: posts.map(post => {
+        const temp = Object.assign({}, post)
+        if (temp.body.length > 40) {
+          temp.body = temp.body.slice(0, 40) + '...'
+        }
+        return temp
+      }),
+      pages,
+      page,
+      category,
+      categories: ['all', ...categories],
     },
   };
 };

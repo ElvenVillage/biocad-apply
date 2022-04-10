@@ -18,7 +18,7 @@ const Home = ({ posts, pages, categories }: Props) => {
         page={1} 
         pages={pages} 
         posts={posts} 
-        query={''} 
+      
         categories={categories}/>
   )
 }
@@ -34,7 +34,7 @@ export const getServerSideProps: GetServerSideProps = async context => {
     props: {
       posts,
       pages,
-      categories
+      categories: ['all', ...categories]
     }
   }
 }

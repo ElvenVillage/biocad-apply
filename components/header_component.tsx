@@ -1,4 +1,4 @@
-import { Button } from "antd"
+import { Button, Space, Typography } from "antd"
 import { signIn, signOut, useSession } from "next-auth/react"
 import Head from "next/head"
 import { useRouter } from "next/router"
@@ -12,15 +12,17 @@ export const HeaderComponent = ({title}: {title: string}) => {
             <title>{title}</title>
         </Head>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <div>{title}</div>
+                <div style={{width: '40m', paddingTop: '10px'}}>
+                    <Typography.Title>{title}</Typography.Title>
+                </div>
                 <div style={{ display: 'flex' }}>
                     {data ? 
+                    (<Space size='large'>
+                        <div><Typography.Link onClick={() => router.push('/create/')}>Создать пост</Typography.Link>  </div>
+                        <div><Typography.Link onClick={() => signOut()}>Выйти</Typography.Link></div>
+                    </Space>) : 
                     (<>
-                        <div><Button onClick={() => router.push('/create/')}>Создать пост</Button></div>
-                        <div><Button onClick={() => signOut()}>Выйти</Button></div>
-                    </>) : 
-                    (<>
-                        <div><Button onClick={() => signIn()}>Войти</Button></div>
+                        <div><Typography.Link onClick={() => signIn()}>Войти</Typography.Link></div>
                     </>)
                     }
 
