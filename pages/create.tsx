@@ -23,7 +23,7 @@ const Create = ({ categories, tags }: { categories: string[], tags: string[] }) 
         text: string, title: string, category: string,
         tags: string[]
     }) => {
-     
+
         const response = await fetch('/api/post/', {
             'method': 'POST',
             'body': new URLSearchParams({
@@ -83,7 +83,7 @@ const Create = ({ categories, tags }: { categories: string[], tags: string[] }) 
                                 </Space>
                             </>
                         )}>
-                            {localCategories.map(cat => <Select.Option value={cat}>{cat}</Select.Option>)}
+                            {localCategories.map(cat => <Select.Option key={cat} value={cat}>{cat}</Select.Option>)}
                         </Select>
                     </FormItem>
                     <FormItem label="Теги" name="tags">

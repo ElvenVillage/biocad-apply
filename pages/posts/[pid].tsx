@@ -25,7 +25,7 @@ export default function PostPage({ postData }: { postData: Post }) {
       </Card>
       <div style={{ paddingLeft: '1em' }}>
         <Space>
-          {postData.tags.map(tag => <Tag>{tag}</Tag>)}
+          {postData.tags.map(tag => <Tag key={tag}>{tag}</Tag>)}
         </Space>
       </div>
 

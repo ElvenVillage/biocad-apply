@@ -4,7 +4,7 @@ import { Post } from "../model/model"
 
 export type ClickCallback = (tag: string) => void
 
-const PostComponent = (post: Post, clickTag: ClickCallback) => {
+const PostComponent = ({ post, clickTag }: { post: Post, clickTag: ClickCallback }) => {
     return (
         <Card title={
             <Link href={`/posts/${post.id}/`}>{post.title}</Link>
@@ -24,8 +24,7 @@ const PostComponent = (post: Post, clickTag: ClickCallback) => {
                     </Col>
                 </Row>
                 Теги: {post.tags.map(e =>
-                    <Tag 
-                       
+                    <Tag key={e}
                         onClick={() => { clickTag(e) }}
                     >
                         {e}

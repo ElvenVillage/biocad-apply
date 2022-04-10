@@ -59,7 +59,7 @@ const SearchPage = ({
       setLocalPages(text["pages"]);
     };
     fetchPosts();
-  }, [tags, localPage, searchQuery]);
+  }, [tags, localPage, searchQuery, category]);
 
 
   return (
@@ -97,7 +97,7 @@ const SearchPage = ({
           <Content style={{ padding: '0 24px', minHeight: 280 }}>
             <Space>
               {tags.map((tag) => (
-                <Tag
+                <Tag key={tag}
                   closable
                   onClose={(event) => {
                     event.preventDefault();
@@ -110,11 +110,14 @@ const SearchPage = ({
               ))}
             </Space>
             {((tags.length === 0 && searchQuery.length === 0) ? posts : localPosts)?.map((post) =>
-              PostComponent(post, (tag) => {
-                if (tags.includes(tag)) return;
-                setLocalPage(1);
-                setTags((prevTags) => [...prevTags, tag]);
-              })
+              <PostComponent post={post} key={post.id} clickTag={
+                (tag) => {
+                  if (tags.includes(tag)) return;
+                  setLocalPage(1);
+                  setTags((prevTags) => [...prevTags, tag]);
+                }
+              } />
+
             )}
             <Pagination
               total={
